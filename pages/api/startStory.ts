@@ -8,7 +8,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 const generateAction = async (req: NextApiRequest, res: NextApiResponse) => {
-  const basePrompt = `write me an anime highschool drama story where I am the main character, a young ${req.body.sex} called ${req.body.name}, where I have to to make choices like in a game before continuing the story, example : \n
+  const basePrompt = `write me an anime highschool drama story where I am the main character, a young ${req.body.gender} called ${req.body.name}, where I have to to make choices like in a game before continuing the story, example : \n
 the story : \n
 Option 1: \n  
 Option 2: \n `;
@@ -17,7 +17,7 @@ Option 2: \n `;
   const baseCompletion = await openai.createCompletion({
     model: 'text-davinci-003',
     prompt: basePrompt,
-    temperature: 0.7,
+    temperature: 0.5,
     max_tokens: 500,
   });
 
