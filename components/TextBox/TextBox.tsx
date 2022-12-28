@@ -1,49 +1,106 @@
-import { useState, useEffect } from "react";
-import styles from "../styles/Home.module.css";
+import { useState, useEffect, useRef, ChangeEvent } from "react";
+import "@fontsource/vt323";
+import styles from "./TextBox.module.css";
 
 const TextBox = (props: any) => {
-  const [text, setText] = useState<string | undefined>("");
-  const [options, setOptions] = useState("");
+  const [gameText, setGameText] = useState<string | undefined>("");
   const [gameStart, setGameStart] = useState(false);
-  const [userName, setUserName] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [sex, setSex] = useState<any>("");
+  const [optionOne, setOptionOne] = useState("");
+  const [optionTwo, setOptionTwo] = useState("");
 
-  function startGame() {
-    if (userName) {
+  const sexOptions = [
+    { value: "", text: "You are" },
+    { value: "Male", text: "Male" },
+    { value: "Female", text: "Female" },
+  ];
+
+  const handleSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    console.log(event.target.value);
+    setSex(event.target.value as string);
+  };
+
+  function setOptions(text: string) {
+    const startIndex1 = text.indexOf("Option 1");
+    const endIndex1 = text.indexOf("Option 2");
+    const output1 = text.substring(startIndex1, endIndex1);
+
+    const startIndex2 = text.indexOf("Option 2");
+    const endIndex2 = text.length;
+    const output2 = text.substring(startIndex2, endIndex2);
+    setOptionOne(output1);
+    setOptionTwo(output2);
+  }
+
+  async function startGame() {
+    if (inputRef.current?.value && sex) {
+      console.log(inputRef.current?.value);
+      setGameText("Loading...");
       setGameStart(true);
+      const name = inputRef.current?.value.toString();
+      const response = await fetch("/api/startGame", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sex, name }),
+      });
+      const data = await response.json();
+      const { output } = data;
+      console.log("raw", data);
+
+      console.log("OpenAI replied...", output.text);
+      setOptions(output.text);
+
+      const startIndex = 0;
+      const endIndex = output.text.indexOf("Option 1");
+      const trimmedText = output.text.substring(startIndex, endIndex);
+
+      setGameText(trimmedText);
     }
   }
 
-  // function showOption(option) {
-  //   return option.requiredState == null || option.requiredState(state);
-  // }
-
-  // function selectOption(option) {
-  //   const nextTextNodeId = option.nextText;
-  //   if (nextTextNodeId <= 0) {
-  //     return startGame();
-  //   }
-  //   state = Object.assign(state, option.setState);
-  //   showText(nextTextNodeId);
-  // }
-
   return (
-    <div className={styles.container}>
-      <div id="text">{props.text}</div>
-      <div id="option-buttons" className={styles["btn-grid"]}>
-        <button className={styles.btn} onClick={props.onOption1Click}>
-          Option 1
-        </button>
-        <button className={styles.btn} onClick={props.onOption2Click}>
-          Option 2
-        </button>
-        <button className={styles.btn} onClick={props.onOption3Click}>
-          Option 3
-        </button>
-        <button className={styles.btn} onClick={props.onOption4Click}>
-          Option 4
-        </button>
-      </div>
-    </div>
+    <>
+      {gameStart ? (
+        <div className={styles.container}>
+          <div>{gameText}</div>
+          <div className={styles["btn-grid"]}>
+            <button className={styles.btn} onClick={props.onOption1Click}>
+              {optionOne == "" ? "Option 1" : optionOne}
+            </button>
+            <button className={styles.btn} onClick={props.onOption2Click}>
+              {optionTwo == "" ? "Option 2" : optionTwo}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.container_name}>
+          <div className={styles.form}>
+            <input
+              ref={inputRef}
+              value={inputRef?.current?.value}
+              type="text"
+              placeholder="Your Name "
+            />
+
+            <select value={sex} onChange={(e) => handleSelectChange(e)}>
+              {sexOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.text}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className={styles["btn-name"]}>
+            <button className={styles.btn} onClick={startGame}>
+              Start
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 export default TextBox;

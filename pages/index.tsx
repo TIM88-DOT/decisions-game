@@ -3,6 +3,7 @@ import { Inter } from "@next/font/google";
 import styles from "../styles/Home.module.css";
 import ModeSelector from "../components/ModeSelector/ModeSelector";
 import "@fontsource/vt323"
+import TextBox from "../components/TextBox/TextBox";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,6 +21,7 @@ export default function Home() {
       </div>
       <main className={styles.main}>
         <h1>Your decisions your story</h1>
+        <TextBox/>
       </main>
     </>
   );
