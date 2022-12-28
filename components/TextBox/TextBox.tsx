@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, ChangeEvent } from "react";
 import "@fontsource/vt323";
 import styles from "./TextBox.module.css";
+import { TypeAnimation } from "react-type-animation";
 
 const TextBox = () => {
   const [gameText, setGameText] = useState<string | undefined>("");
@@ -91,13 +92,10 @@ const TextBox = () => {
           },
           body: JSON.stringify({ completionPrompt }),
         });
-        console.log("zzzz", count)
         const data = await response.json();
         const { output } = data;
-        console.log("raw", output);
-;
+        setCount((prevCount) => prevCount + 1);
         setOptions(output.text);
-
         setRawText(output.text);
 
         const startIndex = 0;
@@ -105,7 +103,6 @@ const TextBox = () => {
         const trimmedText = output.text.substring(startIndex, endIndex);
 
         setGameText(trimmedText);
-
       } else {
         const basePrompt = `prompt : write me an anime highschool drama story where I am the main character, a young ${gender} called ${name}, where I have to to make choices like in a game before continuing the story,\n example : \n
         the story : \n
@@ -123,7 +120,6 @@ const TextBox = () => {
 
         const data = await response.json();
         const { output } = data;
-        console.log("raw", output);
 
         setGameText(output.text);
 
@@ -158,8 +154,7 @@ const TextBox = () => {
 
         const data = await response.json();
         const { output } = data;
-        console.log("raw", output);
-
+        setCount((prevCount) => prevCount + 1);
         setOptions(output.text);
 
         setRawText(output.text);
@@ -186,7 +181,6 @@ const TextBox = () => {
 
         const data = await response.json();
         const { output } = data;
-        console.log("raw", output);
 
         setGameText(output.text);
         setGameEnded(true);
@@ -198,10 +192,17 @@ const TextBox = () => {
     <>
       {gameStart ? (
         <div className={styles.container}>
-          <div>{gameText}</div>
+          {gameText != "Loading..." ? (
+            <TypeAnimation sequence={[`${gameText}`, 100, () => {}]} speed={80}/>
+          ) : (
+            <div>Loading...</div>
+          )}
+
           {gameEnded ? (
             <div className={styles["btn-over"]}>
-              <button className={styles.btn}>Play Again</button>
+              <button className={styles.btn} onClick={startGame}>
+                Play Again
+              </button>
             </div>
           ) : (
             <div className={styles["btn-grid"]}>
